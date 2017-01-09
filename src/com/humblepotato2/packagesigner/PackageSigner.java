@@ -1,4 +1,5 @@
 /**
+ * @name Package Signer 2.1
  * @author Humble Potato II
  * 
  * External libraries used:
@@ -6,6 +7,11 @@
  *   @version 2.5
  *   @license Apache 2.0
  *   @link http://commons.apache.org/proper/commons-io/
+ * 
+ * - @library iHarder FileDrop
+ *   @version 1.1
+ *   @license Public Domain
+ *   @link http://iharder.sourceforge.net/current/java/filedrop/
  */
 package com.humblepotato2.packagesigner;
 
@@ -40,6 +46,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import net.iharder.dnd.FileDrop;
 import org.apache.commons.io.FilenameUtils;
 
 public class PackageSigner extends JFrame {
@@ -64,6 +71,7 @@ public class PackageSigner extends JFrame {
     private Date date;
     private String today;
     private SignPackage signPackage;
+    private FileDrop fileDrop;
     
     /**
      * Class constructor calls initUI() method
@@ -83,18 +91,20 @@ public class PackageSigner extends JFrame {
         /**
          * JFrame main window
          */
-        setTitle("Package Signer 2.0");
+        setTitle("Package Signer 2.1");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
         
         /**
          * jTextArea & jScrollPane
          */
-        jTextArea.setText(today + "Package Signer version 2.0 \n");
+        jTextArea.setText(today + "Package Signer version 2.1 \n");
         jTextArea.setEditable(false);
         jTextArea.setColumns(20);
         jTextArea.setRows(5);
         jScrollPane.setViewportView(jTextArea);
+        
+        fileDrop();  // Calls fileDrop() method
         
         /**
          * jMenuBar, jMenu & jMenuItem(s)
@@ -183,10 +193,18 @@ public class PackageSigner extends JFrame {
         jMenuItem5.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String instructions = "Instructions\n\n"+
+                String instructions = "Instructions\n"+
                                       "1. Specify the Package you want to sign.\n"+
-                                      "2. Choose an Output directory where to save it.   \n"+
-                                      "3. Hit the Sign button to start signing it.\n\n";
+                                      "2. Choose an Output directory where to save it.\n"+
+                                      "3. Hit the Sign button to start signing it.\n\n"+
+                                      "Shortcut keys\n"+
+                                      "- Package selection > ⌘ or CTRL + P (for Windows/Linux/Mac)   \n"+
+                                      "- Output selection > ⌘ or CTRL + O (for Windows/Linux/Mac)\n"+
+                                      "- Signing package > ⌘ or CTRL + S (for Windows/Linux/Mac)\n\n"+
+                                      "Drag & Drop\n"+
+                                      "You can also drag and drop the package into the text box.\n"+
+                                      "But take note, although you can drag multiple packages at\n"+
+                                      "once, only the first package included will be signed.\n\n";
                 dialogIcon = new ImageIcon(getClass().getResource("/drawable/ic_help_36.png"));
                 JOptionPane.showMessageDialog(rootPane, instructions, "Help", JOptionPane.QUESTION_MESSAGE, dialogIcon);
             }
@@ -200,7 +218,7 @@ public class PackageSigner extends JFrame {
         jMenuItem6.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String about = "Package Signer 2.0\n"+
+                String about = "Package Signer 2.1\n"+
                                "Created by Humble Potato II";
                 dialogIcon = new ImageIcon(getClass().getResource("/drawable/ic_info_36.png"));
                 JOptionPane.showMessageDialog(rootPane, about, "About", JOptionPane.INFORMATION_MESSAGE, dialogIcon);
@@ -297,7 +315,7 @@ public class PackageSigner extends JFrame {
         jButton5.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                jTextArea.setText(today + "Package Signer version 2.0\n");
+                jTextArea.setText(today + "Package Signer version 2.1\n");
             }
         });
         jToolBar.add(jButton5);
@@ -393,6 +411,28 @@ public class PackageSigner extends JFrame {
     }
     
     /**
+     * FileDrop (Library used to handle dragged file(s))
+     */
+    private void fileDrop() {
+        fileDrop = new FileDrop( null, jTextArea, new FileDrop.Listener() {
+            @Override
+            public void filesDropped(File[] files) {
+                // Pass dropped file(s) to jFileChooser1, then
+                // print out the the dragged file(s) to jTextArea.
+                // NOTE: For multiple dragged files, only the
+                // first file printed in the line will be selected.
+                jFileChooser1.setSelectedFiles(files);
+                // Print out the file(s) to jTextArea.
+                for (File file : files) {
+                    try {
+                        jTextArea.append(today + "Dragged package included (" + file.getCanonicalPath() + ") \n");
+                    }catch (java.io.IOException ex) {  }
+                }
+            }
+        });
+    }
+    
+    /**
      * Package selection method
      */
     private void selectPackage() {
@@ -404,7 +444,6 @@ public class PackageSigner extends JFrame {
             jTextArea.append(today + "Selected package included (" + file + ") \n");
         }
     }
-    
     
     /**
      * Output selection method
@@ -426,7 +465,6 @@ public class PackageSigner extends JFrame {
             jButton3.setEnabled(true);
         }
     }
-    
     
     /**
      * Signing package
@@ -473,11 +511,11 @@ public class PackageSigner extends JFrame {
                 }
                 // Print out a success message to jTextArea if the process was successful.
                 // Print out an error message to jTextArea if the process was failed, then
-                // display an error dialog message and reset all selections to null.
+                // display an error dialog message.
                 if (status == 0) {
                     jTextArea.append(today + "Package signing successful (" + folder + separator + name + "-signed." + extension + ") \n");
                 } else {
-                    String cause = "Known issues\n\n"+
+                    String cause = "Known issues\n"+
                                    "- The package specified may be damaged.\n"+
                                    "- The package specified may be renamed or removed.\n"+
                                    "- The output directory may be renamed or removed.\n"+
@@ -488,13 +526,9 @@ public class PackageSigner extends JFrame {
                     dialogIcon = new ImageIcon(getClass().getResource("/drawable/ic_error_36.png"));
                     jTextArea.append(today + "Package signing failed (an error occured during the process) \n");
                     JOptionPane.showMessageDialog(rootPane, cause, "ERROR", JOptionPane.ERROR_MESSAGE, dialogIcon);
-                    jFileChooser1.setSelectedFile(null);
-                    jFileChooser2.setSelectedFile(null);
                 }
                 process.destroy();
-            } catch (IOException | InterruptedException | HeadlessException ex) {
-                ex.printStackTrace(System.err);
-            }
+            } catch (IOException | InterruptedException | HeadlessException ex) {  }
             
             return status;
         }
@@ -503,11 +537,14 @@ public class PackageSigner extends JFrame {
         @Override
         protected void done() {
             // When process ends, disable jMenuItem3, jButton3, and jButton4.
-            // And set Indeterminate jProgressBar to false indicating that there's no current process.
+            // And set Indeterminate jProgressBar to false indicating that
+            // there's no current process. Also set all selections to null.
             jMenuItem3.setEnabled(false);
             jButton3.setEnabled(false);
             jButton4.setEnabled(false);
             jProgressBar.setIndeterminate(false);
+            jFileChooser1.setSelectedFile(null);
+            jFileChooser2.setSelectedFile(null);
         }
     }
     
