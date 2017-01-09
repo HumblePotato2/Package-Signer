@@ -1,4 +1,4 @@
-### Package Signer 2.0
+### Package Signer 2.1
 
 This tool automatically sign an APK or an OTA update package with the Android test certificate (see Apk Sign below under references for more details)
 
@@ -12,3 +12,4 @@ This tool automatically sign an APK or an OTA update package with the Android te
 
 - [Apk Sign](https://github.com/appium/sign) Signapk.jar by Appium
 - [Commons IO](http://commons.apache.org/proper/commons-io/) Library by Apache
+- [FileDrop](http://iharder.sourceforge.net/current/java/filedrop/) Library by iHarder
