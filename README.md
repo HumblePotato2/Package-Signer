@@ -1,4 +1,4 @@
-### Package Signer 2.1
+### Package Signer 2.2
 
 This tool automatically sign an APK or an OTA update package with the Android test certificate (see Apk Sign below under references for more details)
 
