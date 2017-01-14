@@ -1,17 +1,12 @@
 /*
- * @name Package Signer 2.2
+ * @name Package Signer 3.0
  * @author Humble Potato II
  *
- * External libraries used:
+ * External library used:
  * - @library Apache Commons IO
  *   @version 2.5
  *   @license Apache 2.0
  *   @link http://commons.apache.org/proper/commons-io/
- * 
- * - @library iHarder FileDrop
- *   @version 1.1
- *   @license Public Domain
- *   @link http://iharder.sourceforge.net/current/java/filedrop/
  */
 package com.humblepotato2.packagesigner;
 
@@ -20,7 +15,11 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.GroupLayout;
@@ -44,18 +43,19 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import net.iharder.dnd.FileDrop;
+
 import org.apache.commons.io.FilenameUtils;
+
+import orig.SignApk;
 
 public class PackageSigner extends JFrame {
     
     /**
      * Initialize variables.
      */
-    private DragAndDrop fileDrop;
     private GroupLayout layoutA, layoutMain;
     private ImageIcon icon;
-    private JButton jButton1, jButton2, jButton3, jButton4, jButton5;
+    private JButton jButton1, jButton2, jButton3, jButton4;
     private JFileChooser jFileChooser1, jFileChooser2;
     private JMenu jMenu1, jMenu2;
     private JMenuBar jMenuBar;
@@ -69,7 +69,7 @@ public class PackageSigner extends JFrame {
     private KeyStroke keyStroke;
     private OutputSelection outputSelection;
     private PackageSelection packageSelection;
-    private SignPackage signPackages;
+    private SignPackage signPackage;
     private String date, message;
     
     /**
@@ -84,7 +84,7 @@ public class PackageSigner extends JFrame {
      */
     private void initUI() {
         
-        this.setTitle("Package Signer 2.2");
+        this.setTitle("Package Signer 3.0");
         this.setResizable(false);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         
@@ -101,6 +101,7 @@ public class PackageSigner extends JFrame {
     private void initComponents() {
 
         initObjects();  // #Initialize objects
+        initAssets();  // #Initialize keys
         configureSwingMenus();  // #Swing menus configuration
         configureToolbarActions();  // #Toolbar actions configuration
         configureTextBox();  // #Text box configuration
@@ -114,13 +115,10 @@ public class PackageSigner extends JFrame {
         
         date = new SimpleDateFormat(" MM/dd/yyyy - ").format(new Date());
         
-        fileDrop = new DragAndDrop();
-        
         jButton1 = new JButton();
         jButton2 = new JButton();
         jButton3 = new JButton();
         jButton4 = new JButton();
-        jButton5 = new JButton();
         jFileChooser1 = new JFileChooser();
         jFileChooser2 = new JFileChooser();
         jMenu1 = new JMenu();
@@ -144,6 +142,53 @@ public class PackageSigner extends JFrame {
     }
     
     /**
+     * #Initialize keys
+     */
+    private void initAssets() {
+        
+        InputStream publicAssetsKey = null;
+        InputStream privateAssetsKey = null;
+        OutputStream publicKeyOutput = null;
+        OutputStream privateKeyOutput = null;
+        
+        try {
+            // Extract public and private testkey(s).
+            publicAssetsKey = getClass().getResourceAsStream("/assets/keys/testkey.x509.pem");
+            privateAssetsKey = getClass().getResourceAsStream("/assets/keys/testkey.pk8");
+            publicKeyOutput = new FileOutputStream("testkey.x509.pem");
+            privateKeyOutput = new FileOutputStream("testkey.pk8");
+            
+            byte[] buffer = new byte[1024];
+            int length = 0;
+            
+            while ((length = publicAssetsKey.read(buffer)) > 1) {
+                publicKeyOutput.write(buffer, 0, length);
+            }
+            while ((length = privateAssetsKey.read(buffer)) > 1) {
+                privateKeyOutput.write(buffer, 0, length);
+            }
+            
+            publicKeyOutput.flush();
+            publicKeyOutput.close();
+            privateKeyOutput.flush();
+            privateKeyOutput.close();
+            publicAssetsKey.close();
+            privateAssetsKey.close();
+            
+            // Testkey(s) will be deleted on exit.
+            File publicKeyTemp = new File("testkey.x509.pem");
+            File privateKeyTemp = new File("testkey.pk8");
+            publicKeyTemp.deleteOnExit();
+            privateKeyTemp.deleteOnExit();
+        } catch (IOException ex) {
+            message = date + "Failed to initialize assets.";
+            icon = new ImageIcon(getClass().getResource("/drawable/ic_error_36.png"));
+            JOptionPane.showMessageDialog(rootPane, message, "Error", JOptionPane.ERROR_MESSAGE, icon);
+            System.exit(0);
+        }
+    }
+    
+    /**
      * #Swing menus configuration
      */
     private void configureSwingMenus() {
@@ -153,12 +198,12 @@ public class PackageSigner extends JFrame {
         jMenuItem1.setIcon(new ImageIcon(getClass().getResource("/drawable/ic_archive_18.png")));
         jMenuItem1.setMnemonic('P');
         jMenuItem1.setText("Package   ");
-        jMenuItem1.setToolTipText("Browse for new package(s)");
+        jMenuItem1.setToolTipText("Browse for a new package");
         jMenuItem1.setAccelerator(keyStroke.getKeyStroke('P', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         jMenuItem1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                packageSelection.choosePackages();
+                packageSelection.choosePackage();
             }
         });
         
@@ -181,23 +226,13 @@ public class PackageSigner extends JFrame {
         jMenuItem3.setIcon(new ImageIcon(getClass().getResource("/drawable/ic_sign_18.png")));
         jMenuItem3.setMnemonic('S');
         jMenuItem3.setText("Sign");
-        jMenuItem3.setToolTipText("Sign the package(s)");
+        jMenuItem3.setToolTipText("Sign the package");
         jMenuItem3.setAccelerator(keyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         jMenuItem3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-				
-                JMenuItem source = (JMenuItem) e.getSource();
-                
-                if (source == jMenuItem3) {
-                    jMenuItem3.setEnabled(false);
-                    jButton3.setEnabled(false);
-                    jButton4.setEnabled(true);
-                }
-                
-                signPackages = new SignPackage();
-                signPackages.execute();
-                jProgressBar.setIndeterminate(true);
+                signPackage = new SignPackage();
+                signPackage.execute();
             }
         });
         
@@ -213,21 +248,18 @@ public class PackageSigner extends JFrame {
         
         // Instructions dialog (jMenuItem5)
         jMenuItem5.setIcon(new ImageIcon(getClass().getResource("/drawable/ic_help_18.png")));
-        jMenuItem5.setMnemonic('I');
         jMenuItem5.setText("?");
         jMenuItem5.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 message = "Instructions\n"+
-                          "1. Specify the Package(s) you want to sign.\n"+
+                          "1. Specify the Package you want to sign.\n"+
                           "2. Choose an Output directory where to save it.\n"+
                           "3. Hit the Sign button to start signing it.\n\n"+
                           "Shortcut keys\n"+
-                          "- Package selection > ⌘ or CTRL + P (for Windows/Linux/Mac)\n"+
-                          "- Output selection > ⌘ or CTRL + O (for Windows/Linux/Mac)\n"+
-                          "- Signing package > ⌘ or CTRL + S (for Windows/Linux/Mac)\n\n"+
-                          "Drag & Drop\n"+
-                          "Supports dragging and dropping of package(s) into the text box.   \n\n";
+                          "- Package selection > ⌘ or CTRL + P (Windows/Linux/Mac)   \n"+
+                          "- Output selection > ⌘ or CTRL + O (Windows/Linux/Mac)\n"+
+                          "- Signing package > ⌘ or CTRL + S (Windows/Linux/Mac)\n\n";
                 icon = new ImageIcon(getClass().getResource("/drawable/ic_help_36.png"));
                 JOptionPane.showMessageDialog(rootPane, message, "Help", JOptionPane.QUESTION_MESSAGE, icon);
             }
@@ -240,7 +272,7 @@ public class PackageSigner extends JFrame {
         jMenuItem6.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                message = "Package Signer 2.2\n"+
+                message = "Package Signer 3.0\n"+
                           "Created by Humble Potato II";
                 icon = new ImageIcon(getClass().getResource("/drawable/ic_info_36.png"));
                 JOptionPane.showMessageDialog(rootPane, message, "About", JOptionPane.INFORMATION_MESSAGE, icon);
@@ -277,14 +309,14 @@ public class PackageSigner extends JFrame {
         /* JButtons */
         // Package selection (jButton1)
         jButton1.setIcon(new ImageIcon(getClass().getResource("/drawable/ic_archive_36.png")));
-        jButton1.setToolTipText("Browse for new package(s)");
+        jButton1.setToolTipText("Browse for a new package");
         jButton1.setFocusable(false);
         jButton1.setHorizontalTextPosition(SwingConstants.CENTER);
         jButton1.setVerticalTextPosition(SwingConstants.BOTTOM);
         jButton1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                packageSelection.choosePackages();
+                packageSelection.choosePackage();
             }
         });
         
@@ -305,49 +337,25 @@ public class PackageSigner extends JFrame {
         // Signing package (jButton3)
         jButton3.setEnabled(false);
         jButton3.setIcon(new ImageIcon(getClass().getResource("/drawable/ic_sign_36.png")));
-        jButton3.setToolTipText("Sign the package(s)");
+        jButton3.setToolTipText("Sign the package");
         jButton3.setFocusable(false);
         jButton3.setHorizontalTextPosition(SwingConstants.CENTER);
         jButton3.setVerticalTextPosition(SwingConstants.BOTTOM);
         jButton3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JButton source = (JButton) e.getSource();
-                
-                if (source == jButton3) {
-                    jMenuItem3.setEnabled(false);
-                    jButton3.setEnabled(false);
-                    jButton4.setEnabled(true);
-                }
-                
-                signPackages = new SignPackage();
-                signPackages.execute();
-                jProgressBar.setIndeterminate(true);
+                signPackage = new SignPackage();
+                signPackage.execute();
             }
         });
         
-        // Cancel sign process (jButton4)
-        jButton4.setEnabled(false);
-        jButton4.setIcon(new ImageIcon(getClass().getResource("/drawable/ic_cancel_36.png")));
-        jButton4.setToolTipText("Cancel signing process");
+        // Clear log message (jButton4)
+        jButton4.setIcon(new ImageIcon(getClass().getResource("/drawable/ic_clear_36.png")));
+        jButton4.setToolTipText("Clear log message");
         jButton4.setFocusable(false);
         jButton4.setHorizontalTextPosition(SwingConstants.CENTER);
         jButton4.setVerticalTextPosition(SwingConstants.BOTTOM);
         jButton4.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                signPackages.cancel(true);
-                signPackages.done();
-            }
-        });
-        
-        // Clear log message (jButton5)
-        jButton5.setIcon(new ImageIcon(getClass().getResource("/drawable/ic_clear_36.png")));
-        jButton5.setToolTipText("Clear log message");
-        jButton5.setFocusable(false);
-        jButton5.setHorizontalTextPosition(SwingConstants.CENTER);
-        jButton5.setVerticalTextPosition(SwingConstants.BOTTOM);
-        jButton5.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 jTextArea.setText(null);
@@ -361,8 +369,7 @@ public class PackageSigner extends JFrame {
         jToolBar.add(jButton1);  // Package selection
         jToolBar.add(jButton2);  // Output directory selection
         jToolBar.add(jButton3);  // Signing package
-        jToolBar.add(jButton4);  // Cancel sign process
-        jToolBar.add(jButton5);  // Clear log message
+        jToolBar.add(jButton4);  // Clear log message
     }
     
     /**
@@ -372,10 +379,8 @@ public class PackageSigner extends JFrame {
         
         /* JTextArea & JScrollPane */
         jTextArea.setEditable(false);
-        jTextArea.setText(date + "Package Signer version 2.2 \n");
+        jTextArea.setText(date + "Package Signer version 3.0 \n");
         jScrollPane.setViewportView(jTextArea);
-        
-        fileDrop.dropPackages();  // Drag and drop packages into text box.
     }
     
     /**
@@ -437,63 +442,26 @@ public class PackageSigner extends JFrame {
     }
     
     /**
-     * FileDrop (A library used to support drag and drop function)
-	 *
-	 * Since the Package selection uses only the jFileChooser1
-	 * to store the selected files, then we need to pass or set
-	 * the dropped packages to jFileChooser1.
-     */
-    private class DragAndDrop {
-        
-        protected void dropPackages() {
-            
-            new FileDrop(null, jTextArea, new FileDrop.Listener() {
-                
-                @Override
-                public void filesDropped(File[] packages) {
-                    
-                    jFileChooser1.setSelectedFiles(packages);
-                    
-                    for (int i = 0; i < packages.length; i++) {
-                        message = date + "Dropped package included (" + packages[i].getName() + ") \n";
-                        jTextArea.append(message);
-                    }
-                    
-                    jMenuItem2.setEnabled(true);
-                    jButton2.setEnabled(true);
-                }
-            });
-        }
-    }
-    
-    /**
      * Package selection
      */
     private class PackageSelection {
         
         private FileNameExtensionFilter filter;
         
-        protected void choosePackages() {
+        protected void choosePackage() {
             
             filter = new FileNameExtensionFilter("(*.apk, *.zip)", "apk", "zip");
             
             jFileChooser1.setCurrentDirectory(new File(System.getProperty("user.dir")));
             jFileChooser1.setAcceptAllFileFilterUsed(false);  // Disable All Files filter.
-            jFileChooser1.setMultiSelectionEnabled(true);  // Support for multiple selection.
             jFileChooser1.setFileFilter(filter);  // Sets File extension filter to APK and ZIP only.
             
             int response = jFileChooser1.showOpenDialog(rootPane);
             
             if (response == JFileChooser.APPROVE_OPTION) {
-                
-                File[] chosenPackages = jFileChooser1.getSelectedFiles();
-                
-                for (int i = 0; i < chosenPackages.length; i++) {
-                    String name = chosenPackages[i].getName();
-                    message = date + "Selected package included (" + name + ") \n";
-                    jTextArea.append(message);
-                }
-                
+                String name = jFileChooser1.getSelectedFile().getName();
+                message = date + "Selected package included (" + name + ") \n";
+                jTextArea.append(message);
                 jMenuItem2.setEnabled(true);
                 jButton2.setEnabled(true);
             }
@@ -516,7 +484,6 @@ public class PackageSigner extends JFrame {
                 String path = jFileChooser2.getSelectedFile().getAbsolutePath();
                 message = date + "Selected output assigned (" + path + ") \n";
                 jTextArea.append(message);
-                
                 jMenuItem3.setEnabled(true);
                 jButton3.setEnabled(true);
             }
@@ -525,106 +492,51 @@ public class PackageSigner extends JFrame {
     
     /**
      * Signing package
-	 *
-	 * Using SwingWorker.doInBackground for the signing process.
      */
     private class SignPackage extends SwingWorker<Integer, String> {
-        
-        private Process process;
-        private int status;
         
         @Override
         protected Integer doInBackground() throws Exception {
             
-			/* Get the package(s) and output directory paths. */
-            File[] includedPackages = jFileChooser1.getSelectedFiles();
+            File includedPackage = jFileChooser1.getSelectedFile();
             
-            String folder = jFileChooser2.getSelectedFile().getAbsolutePath();  // Get the specified output directory path.
-            String path = System.getProperty("user.dir");  // Get current running JAR path.
+            String inputPackage = includedPackage.getAbsolutePath();
+            String folder = jFileChooser2.getSelectedFile().getAbsolutePath();
+            // Using Apache Commons IO FilenameUtils to separate the base name
+            // and the package extension to be able to change the output name.
+            String name = FilenameUtils.getBaseName(includedPackage.getName());
+            String extension = FilenameUtils.getExtension(includedPackage.getName());
             String separator = System.getProperty("file.separator");  // Use the system default path separator.
+            String outputPackage = folder + separator + name + "-signed." + extension;
             
-			/* The FOR loop statement will handle the process for multiple packages. */
-            for (int i = 0; i < includedPackages.length; i++) {
-                
-                String packages = includedPackages[i].getAbsolutePath();  // Get the current package's absolute path.
-				// Using Commons IO FilenameUtils to separate
-				// the base name and the package's extension.
-                String name = FilenameUtils.getBaseName(includedPackages[i].getName());
-                String extension = FilenameUtils.getExtension(includedPackages[i].getName());
-                // This is basically, the system command that
-				// will sign the package(s). So to access the
-				// signapk.jar and the testkeys, get the current
-				// "user.dir" path (this will return the path
-				// where the current JAR is running), then use
-				// the system default path separator (cause it
-				// varies according to Operating Systems).
-                String[] command = {"java",
-                                    "-Xmx1024m",
-                                    "-jar",
-                                    "" + path + separator + "assets" + separator + "signapk.jar",
-                                    "-w",
-                                    "" + path + separator + "assets" + separator + "testkey.x509.pem",
-                                    "" + path + separator + "assets" + separator + "testkey.pk8",
-                                    "" + packages + "",
-                                    "" + folder + separator + name + "-signed." + extension +""};
-                
-                try {
-					// Using ProcessBuilder to execute the command. Which needs to be in array form.
-                    ProcessBuilder processBuilder = new ProcessBuilder(command);
-                    process = processBuilder.start();
-                    if (!isCancelled()) {
-                        message = date + "Processing package (" + name + "." + extension + ") \n";
-                        jTextArea.append(message);
-                        status = process.waitFor();
-                        if (status == 0) {
-                            message = date + "Signing package succeed (" + name + "-signed." + extension + ") \n";
-                            jTextArea.append(message);
-                            Thread.sleep(1000);
-                        } else {
-                            message = "Known issues\n"+
-                                      "- The package specified is not valid.\n"+
-                                      "- The package specified may be damaged.\n"+
-                                      "- The package specified may be renamed or removed.\n"+
-                                      "- The output directory may be renamed or removed.\n"+
-                                      "- The assets' folder may be renamed or removed.\n"+
-                                      "- The assets' file(s) may be modified or removed.\n"+
-                                      "- The libraries' folder may be renamed or removed.\n"+
-                                      "- The libraries' file(s) may be renamed or removed.   \n\n";
-                            icon = new ImageIcon(getClass().getResource("/drawable/ic_error_36.png"));
-                            JOptionPane.showMessageDialog(rootPane, message, "Error", JOptionPane.ERROR_MESSAGE, icon);
-                            message = date + "Signing package failed (an error occured) \n";
-                            jTextArea.append(message);
-                            process.destroy();
-                            return status;
-                        }
-                    } else {
-                        message = date + "Signing package stopped (process was cancelled) \n";
-                        jTextArea.append(message);
-                        process.destroy();
-                        return status;
-                    }
-                    
-                    process.destroy();
-                } catch (IOException | InterruptedException ex) {
-                    if( process != null ) process.destroy();
-                }
+            try {
+                jProgressBar.setIndeterminate(true);
+                new SignApk(inputPackage, outputPackage);
+                message = date + "Package signing successful (" + name + "-signed." + extension + ") \n";
+                jTextArea.append(message);
+            } catch (IOException | GeneralSecurityException ex) {
+                message = "Known issues\n"+
+                          "- The testkey(s) are not found.\n"+
+                          "- The package specified may be damaged.\n"+
+                          "- The package specified may be renamed or removed.   \n"+
+                          "- The output directory may be renamed or removed.\n\n";
+                icon = new ImageIcon(getClass().getResource("/drawable/ic_error_36.png"));
+                JOptionPane.showMessageDialog(rootPane, message, "Error", JOptionPane.ERROR_MESSAGE, icon);
+                message = date + "Package signing failed (fatal error occured) \n";
+                jTextArea.append(message);
+                jProgressBar.setIndeterminate(false);
             }
             
-            return status;
+            return 0;
         }
         
         @Override
         protected void done() {
-			// When the process ws completed, failed or cancelled,
-			// set all selections and actions to their default state.
             jMenuItem2.setEnabled(false);
             jMenuItem3.setEnabled(false);
             jButton2.setEnabled(false);
             jButton3.setEnabled(false);
-            jButton4.setEnabled(false);
             jProgressBar.setIndeterminate(false);
-            jFileChooser1.setSelectedFiles(null);
-            jFileChooser2.setSelectedFile(null);
         }
     }
 }
