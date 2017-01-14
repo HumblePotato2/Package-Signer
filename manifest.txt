@@ -1,2 +1,1 @@
-Class-Path: lib/commons-io-2.5.jar lib/filedrop-1.1.jar
 Main-Class: com.humblepotato2.packagesigner.PackageSigner
