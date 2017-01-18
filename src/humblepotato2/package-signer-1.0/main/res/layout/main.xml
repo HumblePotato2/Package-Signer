@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.humblepotato2.packagesigner.PackageSigner">
+
+    <include layout="@layout/toolbar"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btn_package"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_package"
+                android:layout_marginTop="70dp"
+                android:layout_marginLeft="16dp"/>
+            <Button
+                android:id="@+id/btn_output"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="70dp"
+                android:layout_marginLeft="115dp"
+                android:text="@string/btn_output"/>
+
+            <TextView
+                android:id="@+id/inp_package"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/btn_package"
+                android:layout_marginTop="24dp"
+                android:layout_marginLeft="16dp"
+                android:text="@string/btn_package"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="14sp"/>
+
+            <EditText
+                android:id="@+id/pkg_path"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/inp_package"
+                android:layout_marginTop="6dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:text=""
+                android:hint="@string/pkg_path"
+                android:scrollHorizontally="true"
+                android:scrollbars="horizontal"/>
+
+            <TextView
+                android:id="@+id/out_package"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/pkg_path"
+                android:layout_marginTop="24dp"
+                android:layout_marginLeft="16dp"
+                android:text="@string/btn_output"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="14sp"/>
+
+            <EditText
+                android:id="@+id/out_path"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/out_package"
+                android:layout_marginTop="6dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:text=""
+                android:hint="@string/out_path"
+                android:scrollHorizontally="true"
+                android:scrollbars="horizontal"/>
+        </RelativeLayout>
+    </ScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_sign"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_sign"
+        app:fabSize="normal"/>
+</android.support.design.widget.CoordinatorLayout>

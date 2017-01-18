@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/mnu_reference"
+        android:title="@string/mnu_reference"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/mnu_donate"
+        android:title="@string/mnu_donate"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/mnu_about"
+        android:title="@string/mnu_about"
+        app:showAsAction="never"/>
+</menu>

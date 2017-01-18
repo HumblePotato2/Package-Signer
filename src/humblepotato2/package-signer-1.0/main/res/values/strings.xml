@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Package Signer</string>
+    <string name="ver_name">Package Signer 1.0</string>
+    <string name="btn_package">Package</string>
+    <string name="btn_output">Output</string>
+    <string name="exc_fileNotFound">Failed to load keys.</string>
+    <string name="exc_ioInitKeys">Failed to initiate keys.</string>
+    <string name="msg_nullInputPackage">You haven\'t specified a package yet.</string>
+    <string name="msg_nullOutputPackage">You haven\'t specified an output yet.</string>
+    <string name="msg_succeedSigningPackage">Package signing successful.</string>
+    <string name="msg_failedSigningPackage">Package signing failed.</string>
+    <string name="msg_signingProcessStarted">Package signing process started.</string>
+    <string name="abt_dialogTitle">About</string>
+    <string name="abt_positiveButton">Close</string>
+    <string name="abt_message">Package Signer 1.0\n© 2017 Humble Potato II</string>
+    <string name="pkg_path">/sdcard/package.zip</string>
+    <string name="out_path">/sdcard/package_signed.zip</string>
+    <string name="mnu_reference">Reference</string>
+    <string name="mnu_donate">Donate</string>
+    <string name="mnu_about">About</string>
+    <string name="ack_kellinwood">Kellinwood</string>
+    <string name="ack_zipSignerDesc">For the source code to support Sun\'s security API dependency from the ZipSigner app source.</string>
+    <string name="ack_appium">Appium</string>
+    <string name="ack_signApkDesc">For the original SignApk source code used in their project. Modified to be able to work on this application.</string>
+</resources>
