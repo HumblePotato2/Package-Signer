@@ -1,0 +1,8 @@
+Using Apache Commons IO FilenameUtils to separate the base name
+and the package extension to be able to change its output name.
+
+ @library Commons IO
+ @version 2.4
+ @copyright (C) 2002-2016 The Apache Software Foundation
+ @license Apache-2.0
+ @link http://commons.apache.org/proper/commons-io/
