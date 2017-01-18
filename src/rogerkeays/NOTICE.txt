@@ -1,0 +1,7 @@
+A lightweight Android file browser library
+used to support package browsing function.
+
+ @library Simple Android File Chooser
+ @author Roger Keays
+ @license Public Domain
+ @link https://rogerkeays.com/simple-android-file-chooser
