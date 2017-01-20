@@ -1,0 +1,8 @@
+Package Signer
+
+A Java program used to sign APKs and OTA update packages
+with the Android public and private testkey certificate.
+
+ * @version 3.1
+ * @author Humble Potato II
+ * @license MIT License
