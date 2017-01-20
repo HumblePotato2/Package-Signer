@@ -1,0 +1,6 @@
+Commons IO library by Apache used to automatically generate the output package name.
+
+ * @library Commons IO
+ * @version 2.4
+ * @author Apache
+ * @license Apache License 2.0
