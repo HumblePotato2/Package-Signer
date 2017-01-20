@@ -1,1 +1,0 @@
-Main-Class: com.humblepotato2.packagesigner.PackageSigner

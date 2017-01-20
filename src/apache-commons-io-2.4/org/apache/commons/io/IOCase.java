@@ -31,9 +31,8 @@ import java.io.Serializable;
  * Wherever possible, you should use the <code>check</code> methods in this
  * class to compare filenames.
  *
- * @author Stephen Colebourne
- * @version $Id: IOCase.java 606345 2007-12-21 23:43:01Z ggregory $
- * @since Commons IO 1.3
+ * @version $Id: IOCase.java 1307459 2012-03-30 15:11:44Z ggregory $
+ * @since 1.3
  */
 public final class IOCase implements Serializable {
 
@@ -50,6 +49,11 @@ public final class IOCase implements Serializable {
     /**
      * The constant for case sensitivity determined by the current operating system.
      * Windows is case-insensitive when comparing filenames, Unix is case-sensitive.
+     * <p>
+     * <strong>Note:</strong> This only caters for Windows and Unix. Other operating
+     * systems (e.g. OSX and OpenVMS) are treated as case sensitive if they use the
+     * Unix file separator and case-insensitive if they use the Windows file separator
+     * (see {@link java.io.File#separatorChar}).
      * <p>
      * If you derialize this constant of Windows, and deserialize on Unix, or vice
      * versa, then the value of the case-sensitivity flag will change.
@@ -196,6 +200,33 @@ public final class IOCase implements Serializable {
     }
 
     /**
+     * Checks if one string contains another starting at a specific index using the
+     * case-sensitivity rule.
+     * <p>
+     * This method mimics parts of {@link String#indexOf(String, int)} 
+     * but takes case-sensitivity into account.
+     * 
+     * @param str  the string to check, not null
+     * @param strStartIndex  the index to start at in str
+     * @param search  the start to search for, not null
+     * @return the first index of the search String,
+     *  -1 if no match or {@code null} string input
+     * @throws NullPointerException if either string is null
+     * @since 2.0
+     */
+    public int checkIndexOf(String str, int strStartIndex, String search) {
+        int endIndex = str.length() - search.length();
+        if (endIndex >= strStartIndex) {
+            for (int i = strStartIndex; i <= endIndex; i++) {
+                if (checkRegionMatches(str, i, search)) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Checks if one string contains another at a specific index using the case-sensitivity rule.
      * <p>
      * This method mimics parts of {@link String#regionMatches(boolean, int, String, int, int)} 
@@ -211,26 +242,13 @@ public final class IOCase implements Serializable {
         return str.regionMatches(!sensitive, strStartIndex, search, 0, search.length());
     }
 
-    /**
-     * Converts the case of the input String to a standard format.
-     * Subsequent operations can then use standard String methods.
-     * 
-     * @param str  the string to convert, null returns null
-     * @return the lower-case version if case-insensitive
-     */
-    String convertCase(String str) {
-        if (str == null) {
-            return null;
-        }
-        return sensitive ? str : str.toLowerCase();
-    }
-
     //-----------------------------------------------------------------------
     /**
      * Gets a string describing the sensitivity.
      * 
      * @return a string describing the sensitivity
      */
+    @Override
     public String toString() {
         return name;
     }
