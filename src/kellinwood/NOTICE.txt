@@ -1,7 +1,0 @@
-Used to support Sun's security API dependency required
-by SignApk.java to be able to work on Android platform.
-
- @library Sun Jarsign Support
- @version 1.1
- @copyright (C) 2010-2013 Ken Ellinwood
- @link https://forum.xda-developers.com/showthread.php?t=842539

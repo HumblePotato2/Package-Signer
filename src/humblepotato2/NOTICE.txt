@@ -1,8 +1,0 @@
-Modified SignApk to be able to work on a program with a Graphical User Interface.
-SignApk.java used by Appium in their project (see https://github.com/appium/sign).
-
- * Removed the main() method and replaced with the class constructor.
-   Parameters are set to the constructor referring to the input and
-   output packages. And the public and private testkey(s) were both
-   directly specified. But the signature writing process and how the
-   certificates are generated is still the same.
