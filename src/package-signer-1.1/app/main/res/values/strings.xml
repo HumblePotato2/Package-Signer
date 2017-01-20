@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">Package Signer</string>
+    <string name="app_version">Package Signer 1.1</string>
+    <string name="btn_package">Package</string>
+    <string name="btn_output">Output</string>
+    <string name="inp_package">Input Package</string>
+    <string name="inp_field">/sdcard/package.zip</string>
+    <string name="out_package">Output Package</string>
+    <string name="out_field">/sdcard/package_signed.zip</string>
+    <string name="mnu_instructions">Instructions</string>
+    <string name="mnu_reference">Reference</string>
+    <string name="mnu_donate">Donate</string>
+    <string name="mnu_about">About</string>
+    <string name="abt_aboutTitle">About</string>
+    <string name="abt_aboutMessage">Package Signer 1.1\n© 2017 Humble Potato II</string>
+    <string name="abt_aboutPositiveButton">Close</string>
+    <string name="kys_missingKeyTitle">Warning</string>
+    <string name="kys_missingKeyMessage">The public and private testkeys are missing. Please relaunch the application to initiate the keys.</string>
+    <string name="kys_missingKeyPossitiveButton">OK</string>
+    <string name="ins_howToUse">How to use</string>
+    <string name="ins_howToUseDescription">1. Specify the Package you want to sign.\n2. Specify the Output destination and name.\n3. Hit the Sign button to start signing it.</string>
+    <string name="ins_browse">Package browse</string>
+    <string name="ins_browseDescription">You can browse for the package by pressing the Package button and as well as for the output by pressing the Output button.\n\nNOTE: The specified output will be overwritten once the signing process is started.</string>
+    <string name="ref_kellinwood">Kellinwood</string>
+    <string name="ref_zipSignerDescription">For the source code to support Sun\'s security API dependency from the ZipSigner app source.</string>
+    <string name="ref_appium">Appium</string>
+    <string name="ref_signApkDescription">For the original SignApk source code used in their project. Modified to be able to work on this application</string>
+    <string name="ref_rogerKeays">Roger Keays</string>
+    <string name="ref_fileBrowserDescription">For the Simple Android File Browser library. A lightweight Android file browser used to support browsing of packages.</string>
+    <string name="ref_apache">Apache</string>
+    <string name="ref_commonsIODescription">Commons IO library by Apache used to automatically generate the output package name.</string>
+    <string name="msg_emptyInputField">You haven\'t specified a package yet.</string>
+    <string name="msg_emptyOutputField">You haven\'t specified an output yet.</string>
+    <string name="msg_signingStarted">Package signing process started.</string>
+    <string name="msg_signingSuccessful">Package signing successful.</string>
+    <string name="msg_signingFailed">Package signing failed.</string>
+</resources>
