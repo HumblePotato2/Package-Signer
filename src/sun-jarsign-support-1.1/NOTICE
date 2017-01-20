@@ -1,0 +1,5 @@
+Sun Jarsign Support library from Kellinwood's ZipSigner application source used to support Sun's security API dependency.
+
+ * @library Sun Jarsign Support
+ * @author Oracle
+ * @version 1.1
